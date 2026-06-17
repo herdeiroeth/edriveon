@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* ─── Design system E-DriveOn (do apêndice do mockup) ──────────────────────── */
+@theme {
+  --color-ink: #0a1f1c; /* dominante escura — não-preto */
+  --color-bone: #f5f1e8; /* off-white quente — fundo claro */
+  --color-bone-200: #eae3d2; /* bordas e divisores */
+  --color-teal: #0d8278; /* verde-azulado — secundária */
+  --color-volt: #c7ff3d; /* elétrico — CTAs */
+  --color-cyan: #06b6d4; /* acento técnico */
+
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+
+  --animate-ticker: ticker 30s linear infinite;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+body {
+  background-color: var(--color-bone);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display: Inter encorpado com tracking fechado para títulos com presença. */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Rótulos/ticker em mono caixa-alta espaçada. */
+.label-mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+}

@@ -1,0 +1,133 @@
+// E-DriveOn — schema Prisma
+// Plataforma P2P mediadora de locação de veículos elétricos/híbridos.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // conexão pooled (produção); local = direta
+  directUrl = env("DIRECT_URL")   // conexão direta (migrate)
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────
+
+enum Role {
+  LOCATARIO
+  LOCADOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDENTE
+  APROVADO
+  NEGADO
+}
+
+enum VehicleType {
+  ELETRICO
+  HIBRIDO
+}
+
+enum Category {
+  SUV
+  SEDAN
+  HATCH
+}
+
+enum VehicleStatus {
+  ATIVO
+  PAUSADO
+}
+
+// ─── Modelos ──────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(LOCATARIO)
+  status       UserStatus @default(PENDENTE) // novo cadastro entra como PENDENTE
+  reviewedAt   DateTime? // quando foi aprovado/negado pela equipe interna
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  vehicles Vehicle[] // populado na prática só por LOCADOR
+
+  @@index([role])
+  @@index([status])
+}
+
+model Vehicle {
+  id   String @id @default(cuid())
+  slug String @unique // id legível, ex.: "BYD-DOLPHIN-02"
+
+  // Identificação
+  brand        String // marca
+  model        String // modelo
+  year         Int
+  type         VehicleType
+  category     Category
+  color        String
+  city         String
+  neighborhood String?
+
+  // Preço
+  dailyPrice Decimal @db.Decimal(10, 2) // diária R$
+  deposit    Decimal @db.Decimal(10, 2) // caução R$
+
+  // Ficha técnica
+  rangeKm        Int // autonomia
+  powerCv        Int // potência
+  accel0to100    Float // 0-100 km/h em s
+  consumptionKwh Float // kWh / 100km
+  seats          Int
+  trunkLiters    Int
+  topSpeedKmh    Int
+  batteryKwh     Float
+
+  features    String[] // equipamentos & destaques
+  photos      String[] // URLs
+  photoCredit String? // atribuição da foto (autor · licença · fonte)
+
+  rating Float         @default(0) // média de avaliações (mock por enquanto)
+  status VehicleStatus @default(ATIVO)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([type])
+  @@index([category])
+  @@index([city])
+  @@index([ownerId])
+  @@index([status, dailyPrice])
+  @@index([status, rangeKm])
+}
+
+// ─── Fase 2 (referência — não usar ainda) ───────────────────────────────────
+// model Reservation {
+//   id          String   @id @default(cuid())
+//   vehicleId   String
+//   renterId    String
+//   startDate   DateTime
+//   endDate     DateTime
+//   totalPrice  Decimal  @db.Decimal(10, 2)
+//   platformFee Decimal  @db.Decimal(10, 2) // 10%
+//   deposit     Decimal  @db.Decimal(10, 2)
+//   status      String   // PENDENTE | CONFIRMADA | CANCELADA | CONCLUIDA
+// }
+//
+// model Review {
+//   id        String   @id @default(cuid())
+//   vehicleId String
+//   authorId  String
+//   stars     Int
+//   comment   String?
+// }
